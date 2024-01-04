@@ -1,12 +1,37 @@
-const server = require("http").createServer();
-const io = require("socket.io")(server);
+const express = require("express");
+const http = require("http");
+const cors = require("cors");
+const { Server } = require("socket.io");
 
-const PORT = 3000;
+const app = express();
+const server = http.createServer(app);
 
-server.listen(PORT);
+const PORT = 8080;
 
-io.on("connection", (server) => {
-  console.log(`Socket connected`);
+const io = new Server(server, {
+  pingTimeout: 60000,
+  cors: {
+    origin: "http://127.0.0.1:5500",
+    credentials: true,
+  },
 });
 
-console.log(`Server is listening on port ${PORT}`);
+app.set("io", io);
+
+// global middlewares
+app.use(
+  cors({
+    origin: "http://127.0.0.1:5500",
+    credentials: true,
+  })
+);
+
+// Your other routes or middleware can go here...
+
+io.on("connection", (socket) => {
+  console.log("A user connected");
+});
+
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
