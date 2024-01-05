@@ -16,8 +16,6 @@ const io = new Server(server, {
   },
 });
 
-app.set("io", io);
-
 // global middlewares
 app.use(
   cors({
@@ -28,10 +26,23 @@ app.use(
 
 // Your other routes or middleware can go here...
 
-io.on("connection", (socket) => {
-  console.log("A user connected");
-});
+let playerReadyCount = 0;
+let refereeId;
 
+io.on("connection", (socket) => {
+  console.log("A user connected", socket.id);
+
+  socket.on("ready", () => {
+    console.log("Player ready", socket.id);
+    playerReadyCount++;
+
+    if (playerReadyCount === 2) {
+      refereeId = socket.id;
+      console.log(refereeId);
+      io.emit("startGame", refereeId);
+    }
+  });
+});
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
