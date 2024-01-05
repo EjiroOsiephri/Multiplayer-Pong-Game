@@ -1,7 +1,7 @@
 // Canvas Related
 const canvas = document.createElement("canvas");
 const context = canvas.getContext("2d");
-let paddleIndex;
+let paddleIndex = 0;
 const socket = io("http://localhost:8080");
 let isReferee = false;
 
@@ -89,6 +89,11 @@ function ballReset() {
   ballX = width / 2;
   ballY = height / 2;
   speedY = 3;
+  socket.emit("ballMove", {
+    ballX,
+    ballY,
+    score,
+  });
 }
 
 // Adjust Ball Movement
@@ -99,6 +104,11 @@ function ballMove() {
   if (playerMoved) {
     ballX += speedX;
   }
+  socket.emit("ballMove", {
+    ballX,
+    ballY,
+    score,
+  });
 }
 
 // Determine What Ball Bounces Off, Score Points, Reset Ball
@@ -155,9 +165,12 @@ function ballBoundaries() {
 
 // Called Every Frame
 function animate() {
-  ballMove();
+  if (isReferee) {
+    ballMove();
+    ballBoundaries();
+  }
   renderCanvas();
-  ballBoundaries();
+
   window.requestAnimationFrame(animate);
 }
 
@@ -169,7 +182,7 @@ function loadGame() {
 }
 
 function startGame() {
-  paddleIndex = isReferee ? 1 : 0;
+  paddleIndex = isReferee ? 0 : 1;
   window.requestAnimationFrame(animate);
   canvas.addEventListener("mousemove", (e) => {
     playerMoved = true;
@@ -180,6 +193,9 @@ function startGame() {
     if (paddleX[paddleIndex] > width - paddleWidth) {
       paddleX[paddleIndex] = width - paddleWidth;
     }
+    socket.emit("paddleMove", {
+      xPosition: paddleX[paddleIndex],
+    });
     // Hide Cursor
     canvas.style.cursor = "none";
   });
@@ -193,8 +209,18 @@ socket.on("connect", () => {
 });
 
 socket.on("startGame", (refereeId) => {
+  console.log("Received startGame event");
   console.log("Referee is", refereeId);
   isReferee = socket.id === refereeId;
+  console.log("isReferee:", isReferee);
+  startGame();
 });
 
-startGame();
+socket.on("paddleMove", (paddleData) => {
+  const opponentPaddleData = 1 - paddleIndex;
+  paddleX[opponentPaddleData] = paddleData.xPosition;
+});
+
+socket.on("ballMove", (ballData) => {
+  ({ ballX, ballY, score } = ballData);
+});

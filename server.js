@@ -27,7 +27,6 @@ app.use(
 // Your other routes or middleware can go here...
 
 let playerReadyCount = 0;
-let refereeId;
 
 io.on("connection", (socket) => {
   console.log("A user connected", socket.id);
@@ -37,12 +36,19 @@ io.on("connection", (socket) => {
     playerReadyCount++;
 
     if (playerReadyCount === 2) {
-      refereeId = socket.id;
-      console.log(refereeId);
-      io.emit("startGame", refereeId);
+      io.emit("startGame", socket.id);
     }
   });
+
+  socket.on("paddleMove", (paddleData) => {
+    socket.broadcast.emit("paddleMove", paddleData);
+  });
+
+  socket.on("ballMove", (ballData) => {
+    socket.broadcast.emit("ballMove", ballData);
+  });
 });
+
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
