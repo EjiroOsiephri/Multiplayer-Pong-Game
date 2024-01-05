@@ -2,7 +2,7 @@
 const canvas = document.createElement("canvas");
 const context = canvas.getContext("2d");
 let paddleIndex = 0;
-const socket = io("http://localhost:3000");
+const socket = io("/pong");
 let isReferee = false;
 
 let width = 500;
