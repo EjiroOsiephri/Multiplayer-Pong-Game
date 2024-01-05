@@ -35,7 +35,7 @@ io.on("connection", (socket) => {
     console.log("Player ready", socket.id);
     playerReadyCount++;
 
-    if (playerReadyCount === 2) {
+    if (playerReadyCount % 2 === 0) {
       io.emit("startGame", socket.id);
     }
   });
@@ -46,6 +46,12 @@ io.on("connection", (socket) => {
 
   socket.on("ballMove", (ballData) => {
     socket.broadcast.emit("ballMove", ballData);
+  });
+
+  socket.on("disconnect", (reason) => {
+    console.log(
+      `Socket with id ${socket.id} disconnects cause of this: ${reason} `
+    );
   });
 });
 
