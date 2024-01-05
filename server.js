@@ -1,60 +1,22 @@
-const express = require("express");
 const http = require("http");
-const cors = require("cors");
 const { Server } = require("socket.io");
+const sockets = require("./sockets");
+const api = require("./api");
 
-const app = express();
-const server = http.createServer(app);
+const server = http.createServer(api);
 
-const PORT = 8080;
+const PORT = 3000;
 
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "http://127.0.0.1:5500",
+    origin: "http://localhost:3000/",
     credentials: true,
   },
 });
 
-// global middlewares
-app.use(
-  cors({
-    origin: "http://127.0.0.1:5500",
-    credentials: true,
-  })
-);
+sockets.listen(io);
 
-// Your other routes or middleware can go here...
-
-let playerReadyCount = 0;
-
-io.on("connection", (socket) => {
-  console.log("A user connected", socket.id);
-
-  socket.on("ready", () => {
-    console.log("Player ready", socket.id);
-    playerReadyCount++;
-
-    if (playerReadyCount % 2 === 0) {
-      io.emit("startGame", socket.id);
-    }
-  });
-
-  socket.on("paddleMove", (paddleData) => {
-    socket.broadcast.emit("paddleMove", paddleData);
-  });
-
-  socket.on("ballMove", (ballData) => {
-    socket.broadcast.emit("ballMove", ballData);
-  });
-
-  socket.on("disconnect", (reason) => {
-    console.log(
-      `Socket with id ${socket.id} disconnects cause of this: ${reason} `
-    );
-  });
-});
-
-server.listen(PORT, () => {
+server.listen(3000, () => {
   console.log(`Server is running on port ${PORT}`);
 });
