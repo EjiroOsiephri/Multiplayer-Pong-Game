@@ -5,20 +5,20 @@ let paddleIndex = 0;
 const socket = io("/pong");
 let isReferee = false;
 
-let width = 500;
-let height = 700;
+let width = window.innerWidth;
+let height = window.innerHeight;
 
 // Paddle
 let paddleHeight = 10;
 let paddleWidth = 50;
 let paddleDiff = 25;
-let paddleX = [225, 225];
+let paddleX = [width / 2 - paddleWidth / 2, width / 2 - paddleWidth / 2];
 let trajectoryX = [0, 0];
 let playerMoved = false;
 
 // Ball
-let ballX = 250;
-let ballY = 350;
+let ballX = width / 2;
+let ballY = height / 2;
 let ballRadius = 5;
 let ballDirection = 1;
 
@@ -38,6 +38,20 @@ function createCanvas() {
   renderCanvas();
 }
 
+// Resize Canvas
+function resizeCanvas() {
+  width = window.innerWidth;
+  height = window.innerHeight;
+  canvas.width = width;
+  canvas.height = height;
+  paddleX = [width / 2 - paddleWidth / 2, width / 2 - paddleWidth / 2];
+  ballX = width / 2;
+  ballY = height / 2;
+  renderCanvas();
+}
+
+window.addEventListener("resize", resizeCanvas);
+
 function renderIntro() {
   // Canvas Background
   context.fillStyle = "black";
@@ -46,7 +60,9 @@ function renderIntro() {
   // Intro Text
   context.fillStyle = "white";
   context.font = "32px Courier New";
-  context.fillText("Waiting for opponent...", 20, canvas.height / 2 - 30);
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText("Waiting for opponent...", width / 2, height / 2);
 }
 
 // Render Everything on Canvas
@@ -67,8 +83,8 @@ function renderCanvas() {
   // Dashed Center Line
   context.beginPath();
   context.setLineDash([4]);
-  context.moveTo(0, 350);
-  context.lineTo(500, 350);
+  context.moveTo(0, height / 2);
+  context.lineTo(width, height / 2);
   context.strokeStyle = "grey";
   context.stroke();
 
@@ -186,7 +202,7 @@ function startGame() {
   window.requestAnimationFrame(animate);
   canvas.addEventListener("mousemove", (e) => {
     playerMoved = true;
-    paddleX[paddleIndex] = e.offsetX;
+    paddleX[paddleIndex] = e.clientX - paddleWidth / 2;
     if (paddleX[paddleIndex] < 0) {
       paddleX[paddleIndex] = 0;
     }

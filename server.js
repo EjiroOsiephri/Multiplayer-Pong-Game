@@ -10,7 +10,11 @@ const PORT = 3000;
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:3000/",
+    origin: [
+      "http://localhost:3000/",
+      "https://ejiro-multi-pong-game.onrender.com/",
+    ],
+
     credentials: true,
   },
 });
